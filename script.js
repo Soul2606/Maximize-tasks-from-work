@@ -94,3 +94,76 @@ const tasks = [
 	new Task([resources.a.inst(1), resources.b.inst(1)], [resources.c.inst(1)]),
 	new Task([resources.c.inst(1)], [resources.a.inst(1)]),
 ]
+
+
+
+
+
+/**
+ * @param {string} btnText 
+ * @param {string[]} options 
+ * @param {(i:number,e:Event,button:HTMLButtonElement)=>void} onSelect 
+ * @returns {HTMLElement}
+ */
+function createDropdown(btnText, options, onSelect) {
+	
+	const root = document.createElement('div')
+	root.className = 'dropdown'
+	
+	const dropdown = document.createElement('div')
+	dropdown.className = 'dropdown-menu'
+	const hide = ()=>dropdown.style.display = 'none'
+	const show = ()=>dropdown.style.display = ''
+	hide()
+	dropdown.addEventListener('mouseleave', hide)
+	options.forEach((v,i)=>{
+		const b = document.createElement('button')
+		b.className = 'dropdown-menu-item'
+		b.textContent = v
+		b.addEventListener('click',e=>{
+			e.stopPropagation()
+			onSelect(i,e,button)
+			hide()
+		})
+		dropdown.append(b)
+	})
+
+	root.append(dropdown)
+
+	const button = document.createElement('button')
+	button.className = 'dropdown-button'
+	button.textContent = btnText
+	button.addEventListener('click',show)
+	root.append(button)
+
+	return root
+}
+
+
+
+/**
+ * @param {Task} task 
+ * @returns {HTMLElement}
+ */
+function createTask(task) {
+	const root = document.createElement('div')
+
+	const resourcesArray = Object.values(resources).map(v=>v.name)
+	const addReq = createDropdown('Add requirement', resourcesArray, (i,e,btn)=>{
+		console.log(i)
+		btn.textContent = resourcesArray[i]
+		task.requirements.push(Object.values(resources)[i])
+	})
+	root.append(addReq)
+
+	const addProd = createDropdown('Add produce', resourcesArray, (i,e,btn)=>{
+		console.log(i)
+		btn.textContent = resourcesArray[i]
+		task.produce.push(Object.values(resources)[i])
+	})
+	root.append(addProd)
+
+	return root
+}
+
+document.body.append(createTask(tasks[0]))

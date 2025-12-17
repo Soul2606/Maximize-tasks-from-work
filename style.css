@@ -1,0 +1,16 @@
+
+.dropdown{
+    position: relative;
+    width: min-content;
+}
+
+.dropdown-menu{
+    position: absolute;
+    width: 100%;
+    z-index: 9999;
+}
+
+.dropdown-menu-item{
+    display: block;
+    width: 100%;
+}
