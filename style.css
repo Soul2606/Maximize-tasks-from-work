@@ -14,3 +14,13 @@
     display: block;
     width: 100%;
 }
+
+.task{
+    display: grid;
+}
+
+#grid{
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}

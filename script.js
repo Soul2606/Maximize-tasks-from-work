@@ -1,7 +1,7 @@
 
 
 class Task {
-	constructor(requirements, produce=[]) {
+	constructor(requirements=[], produce=[]) {
 		/**
 		 * @type {Resource[]}
 		 */
@@ -89,10 +89,10 @@ const resources = Object.fromEntries(
 );
 
 
+/**
+ * @type {Task[]}
+ */
 const tasks = [
-	new Task([resources.a.inst(1)]),
-	new Task([resources.a.inst(1), resources.b.inst(1)], [resources.c.inst(1)]),
-	new Task([resources.c.inst(1)], [resources.a.inst(1)]),
 ]
 
 
@@ -141,29 +141,98 @@ function createDropdown(btnText, options, onSelect) {
 
 
 
+
+/**
+ * Creates elements that let the user modify a resource in an array of resources
+ * @param {Object<Resource>} resources 
+ * @param {Resource[]} resourcesArray 
+ * @param {Resource} resource 
+ * @returns {HTMLElement}
+ */
+function createResourceDropdown(resources, resourcesArray, resource) {
+	let r = resource
+	const find = ()=>{
+		const idx = resourcesArray.indexOf(r)
+		if (idx === -1) {
+			throw new Error("Cannot find resource in resourcesArray");
+		}
+		return idx
+	}
+	find()
+	const root = document.createElement('div')
+	
+	const removeButton = document.createElement('button')
+	removeButton.textContent = 'Remove'
+	removeButton.addEventListener('click', ()=>{
+		try {
+			resourcesArray.splice(find(), 1)
+		} catch (error) {
+			
+		}
+		root.remove()
+	})
+	root.append(removeButton)
+	
+	const resourceNames = Object.values(resources).map(v=>v.name)
+	const dropdown = createDropdown(resource.name, resourceNames, (i,e,btn)=>{
+		e.stopPropagation()
+		btn.textContent = resourceNames[i]
+		const newR = Object.values(resources)[i].inst(1)
+		try {
+			resourcesArray[find()] = newR
+		} catch (error) {
+			root.remove()
+			return
+		}
+		r = newR
+	})
+	root.append(dropdown)
+
+	return root
+}
+
+
+
 /**
  * @param {Task} task 
  * @returns {HTMLElement}
  */
 function createTask(task) {
 	const root = document.createElement('div')
+	root.className = 'task'
 
-	const resourcesArray = Object.values(resources).map(v=>v.name)
-	const addReq = createDropdown('Add requirement', resourcesArray, (i,e,btn)=>{
-		console.log(i)
-		btn.textContent = resourcesArray[i]
-		task.requirements.push(Object.values(resources)[i])
+	const p = document.createElement('p')
+	p.contentEditable = 'true'
+	p.textContent = 'Task'
+	p.style.gridArea = '1/1/2/3'
+	root.append(p)
+
+	const resourceNames = Object.values(resources).map(v=>v.name)
+	const addReq = createDropdown('Add requirement', resourceNames, (i,e,btn)=>{
+		const resource = Object.values(resources)[i]
+		task.requirements.push(resource)
+		const resourceDropdown = createResourceDropdown(resources, task.requirements, resource)
+		resourceDropdown.style.gridColumn = '1/2'
+		root.append(resourceDropdown)
 	})
+	addReq.style.gridArea = '2/1/3/2'
 	root.append(addReq)
 
-	const addProd = createDropdown('Add produce', resourcesArray, (i,e,btn)=>{
+	const addProd = createDropdown('Add produce', resourceNames, (i,e,btn)=>{
 		console.log(i)
-		btn.textContent = resourcesArray[i]
+		btn.textContent = resourceNames[i]
 		task.produce.push(Object.values(resources)[i])
 	})
+	addProd.style.gridArea = '2/2/3/3'
 	root.append(addProd)
 
 	return root
 }
 
-document.body.append(createTask(tasks[0]))
+document.getElementById('add-task').addEventListener('click', () => {
+	const task = new Task()
+	tasks.push(task)
+	document.getElementById('grid').append(createTask(task))
+	console.log(tasks)
+
+})
